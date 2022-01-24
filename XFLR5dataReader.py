@@ -88,56 +88,73 @@ def BL_graphics(data, params):
     ax.set_title('Amplification of disturbances')
     ax.grid(True)
     
-def polar_graphics(data, params):
-    name, xtrf_top, xtrf_bottom, M, Re, Ncrit = params
+def polar_graphics(data, params = (), data_min = np.array([]), data_max = np.array([])):
+    
     alpha, CL, CD, CDp, Cm, xtr_top, xtr_bottom, Cpmin, Chinge, XCp = np.split(data, 10, axis = 1)
     # CL and Cm
-    fig1, ax = plt.subplots()
-    color1 = 'royalblue'
-    ax.plot(alpha, CL, color = color1)
-    ax.set_xlabel(r'$\alpha$')
-    ax.set_ylabel(r'$C_L$', color = color1)
-    ax.set_title('Lift and moment coefficients')
-    ax.grid(True)
-    ax_ = ax.twinx()
-    color2 = 'navy'
-    ax_.plot(alpha, Cm, color = color2)
-    ax_.set_ylabel(r'$C_m$', color = color2)
-    ax_.set_ylim((-0.5,0))
-    fig1.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
-
+    fig1, ax1 = plt.subplots()
+    color1 = 'tab:blue'
+    ax1.plot(alpha, CL, color = color1)
+    ax1.set_xlabel(r'$\alpha$')
+    ax1.set_ylabel(r'$C_L$', color = color1)
+    ax1.set_title('Lift and moment coefficients')
+    ax1.grid(True)
+    ax_1 = ax1.twinx()
+    color2 = 'tab:red'
+    ax_1.plot(alpha, Cm, color = color2)
+    ax_1.set_ylabel(r'$C_m$', color = color2)
+    ax_1.set_ylim((-0.4,0))
     fig1.tight_layout()
-
+    
     # polar
-    fig2, ax = plt.subplots()
-    ax.plot(CD, CL)
-    ax.set_xlabel(r'$C_D$')
-    ax.set_ylabel(r'$C_L$')
-    ax.set_title('Polar')
-    ax.grid(True)
-    fig2.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
+    fig2, ax2 = plt.subplots()
+    ax2.plot(CD, CL)
+    ax2.set_xlabel(r'$C_D$')
+    ax2.set_ylabel(r'$C_L$')
+    ax2.set_title('Polar')
+    ax2.grid(True)
 
     # Efficiency 
-    fig3, ax = plt.subplots()
-    ax.plot(alpha, CL**1.5/CD)
-    ax.set_xlabel(r'$\alpha$')
-    ax.set_ylabel(r'$C_L^{1.5}/C_D$')
-    ax.set_title('Efficiency parameter')
-    ax.grid(True)
-    fig3.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
+    fig3, ax3 = plt.subplots()
+    ax3.plot(alpha, CL**1.5/CD)
+    ax3.set_xlabel(r'$\alpha$')
+    ax3.set_ylabel(r'$C_L^{1.5}/C_D$')
+    ax3.set_title('Efficiency parameter')
+    ax3.grid(True)
 
     # transition
-    fig4, ax = plt.subplots()
-    ax.plot(alpha, xtr_top, color = color1)
-    ax.plot(alpha, xtr_bottom, color = color2)
-    ax.set_xlabel(r'$\alpha$')
-    ax.set_ylabel(r'$x_{tr}/c$')
-    ax.set_title('Transition position')
-    ax.grid(True)
-    ax.legend(['top', 'bottom'])
-    fig4.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
-
+    fig4, ax4 = plt.subplots()
+    ax4.plot(alpha, xtr_top, color = color1)
+    ax4.plot(alpha, xtr_bottom, color = color2)
+    ax4.set_xlabel(r'$\alpha$')
+    ax4.set_ylabel(r'$x_{tr}/c$')
+    ax4.set_title('Transition position')
+    ax4.grid(True)
+    ax4.legend(['top', 'bottom'])
     
+    if params != (): # 24/01/2022:possibility of not showing title
+        name, xtrf_top, xtrf_bottom, M, Re, Ncrit = params
+        fig1.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
+        fig2.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
+        fig3.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
+        fig4.suptitle(f'{name}:  Re = {Re}; Mach = {M}; Ncrit = {Ncrit}')
+    
+    if data_min.any() != False: # 24/01/2022: possibility to plot the errorbars for different Ncrit
+        alpha_max, CL_max, CD_max, CDp_max, Cm_max, xtr_top_max, xtr_bottom_max, Cpmin_max, Chinge_max, XCp_max = np.split(data_max, 10, axis = 1)
+        alpha_min, CL_min, CD_min, CDp_min, Cm_min, xtr_top_min, xtr_bottom_min, Cpmin_min, Chinge_min, XCp_min = np.split(data_min, 10, axis = 1)
+        print(CL_min[:,0])
+        ax1.fill_between(alpha[:,0], min3(CL[:,0],CL_min[:,0],CL_max[:,0]), 
+                         max3(CL[:,0],CL_min[:,0],CL_max[:,0]), alpha = 0.3, color = color1)
+        ax_1.fill_between(alpha[:,0], max3(Cm[:,0],Cm_min[:,0],Cm_max[:,0]), 
+                          min3(CL[:,0],Cm_min[:,0],Cm_max[:,0]), alpha = 0.3, color = color2)
+        ax3.fill_between(alpha[:,0], min3(CL[:,0]**1.5/CD[:,0],CL_min[:,0]**1.5/CD_min[:,0],CL_max[:,0]**1.5/CD_max[:,0]), 
+                         max3(CL[:,0]**1.5/CD[:,0],CL_min[:,0]**1.5/CD_min[:,0],CL_max[:,0]**1.5/CD_max[:,0]), alpha = 0.3)
+        ax4.fill_between(alpha[:,0], min3(xtr_top[:,0], xtr_top_min[:,0], xtr_top_max[:,0]), 
+                         max3(xtr_top[:,0], xtr_top_min[:,0], xtr_top_max[:,0]), color = color1, alpha = 0.3)
+        ax4.fill_between(alpha[:,0],min3(xtr_bottom[:,0], xtr_bottom_min[:,0], xtr_bottom_max[:,0]), 
+                         max3(xtr_bottom[:,0], xtr_bottom_min[:,0], xtr_bottom_max[:,0]), color = color2, alpha = 0.3)
+        # the polar graph does not come out well, it is omitted
+
 def read_OpPoint(path, graphics = True):
     df = pd.read_csv(path,nrows = 3, header=None)
     name = df.iloc[1,0]
@@ -196,13 +213,28 @@ def read_polar(path, graphics = True):
     if graphics == True:
         polar_graphics(data,(name, xtrf_top, xtrf_bottom, M, Re, Ncrit))
     return data
+
+def max3(a,b,c):
+    return np.maximum(a,np.maximum(b,c))
+
+def min3(a,b,c):
+    return np.minimum(a,np.minimum(b,c))
     
-    
-path = 'data/AH79100C_OP_data_a5.csv'
-data = read_OpPoint(path, graphics = True)
-pathBL = 'data/AH79100C_BL_data_a5.csv'
-dataBL_top, dataBL_bottom = read_BL(pathBL, graphics_top=True)
-pathPolar = 'data/AH79100C_polar.csv'
-polar = read_polar(pathPolar)
+# path = 'data/AH79100C_OP_data_a5.csv'
+# data = read_OpPoint(path, graphics = True)
+# pathBL = 'data/AH79100C_BL_data_a5.csv'
+# dataBL_top, dataBL_bottom = read_BL(pathBL, graphics_top=True)
+pathPolar = '/Users/enricofoglia/Documents/python/ISAE_SUPAERO/AppliedAerodynamics/data/AH79100C_polar.csv'
+polar = read_polar(pathPolar, graphics= False)
+pathPolar_min = '/Users/enricofoglia/Documents/python/ISAE_SUPAERO/AppliedAerodynamics/data/T1_Re0.350_M0.00_N6.0.csv'
+pathPolar_max = '/Users/enricofoglia/Documents/python/ISAE_SUPAERO/AppliedAerodynamics/data/ah79100c_T1_Re0.350_M0.00_N12.0.csv'
+polar_min  = read_polar(pathPolar_min, graphics = False)
+polar_max  = read_polar(pathPolar_max, graphics = False)
+polar_min = polar_min[4:20,:]
+polar = polar[2:18,:]
+polar_graphics(polar, data_min=polar_min, data_max = polar_max)
+polar_graphics(polar_min)
+polar_graphics(polar_max)
+
 
 
