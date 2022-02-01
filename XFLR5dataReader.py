@@ -67,7 +67,7 @@ def BL_graphics(data, params):
         ax.grid(True)
     axs[0].set_ylabel(r'$C_d$')
     axs[1].set_ylabel(r'$C_f$')
-    axs[0].set_title('Drag coefficient')
+    axs[0].set_title('Dissipation coefficient') # 01/02/2022: Name correction
     axs[1].set_title('Skin friction coefficient')
     
     # External velocity Ue
@@ -142,7 +142,6 @@ def polar_graphics(data, params = (), data_min = np.array([]), data_max = np.arr
     if data_min.any() != False: # 24/01/2022: possibility to plot the errorbars for different Ncrit
         alpha_max, CL_max, CD_max, CDp_max, Cm_max, xtr_top_max, xtr_bottom_max, Cpmin_max, Chinge_max, XCp_max = np.split(data_max, 10, axis = 1)
         alpha_min, CL_min, CD_min, CDp_min, Cm_min, xtr_top_min, xtr_bottom_min, Cpmin_min, Chinge_min, XCp_min = np.split(data_min, 10, axis = 1)
-        print(CL_min[:,0])
         ax1.fill_between(alpha[:,0], min3(CL[:,0],CL_min[:,0],CL_max[:,0]), 
                          max3(CL[:,0],CL_min[:,0],CL_max[:,0]), alpha = 0.3, color = color1)
         ax_1.fill_between(alpha[:,0], max3(Cm[:,0],Cm_min[:,0],Cm_max[:,0]), 
