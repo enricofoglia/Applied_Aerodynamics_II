@@ -1,0 +1,20 @@
+ 
+load generation/a3.dat
+PANE
+OPER
+Vpar
+N 9.0
+xtr
+1.0
+1.0
+ 
+iter 500
+visc 350000.0
+Mach
+0
+PACC
+data/a3.log
+ 
+aseq 0.0 10.0 0.25
+ 
+quit
