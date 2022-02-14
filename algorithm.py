@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 10 21:55:46 2022
+
+@author: Asus
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -14,124 +21,151 @@ represents the percentage of A, then that of AB (previous merge), then that of A
 (previuos merge) 
 """
 
+# TODO: some plotting of max and medium fitness through generations
+# TODO: some plotting of the evolution of airfoils
+# TODO: implement scaling of the obj_fun and or normalization of the terms
+
+
 import numpy as np
+import heapq
 import random
+import matplotlib.pyplot as plt
 from obj_fun import obj_fun
-from Pyfoil import *
+from plot_data import plot_data
+from plot_iterations import plot_iterations
+from PYfoil import *
 
 class Airfoil: 
-    def __init__(self, genome, fitness):
+    def __init__(self, genome):
         self.genome = genome
+    def set_fitness(self, fitness):
         self.fitness = fitness
 
-def initialize(n,ind):
-    '''
-    Generates the initial airfoils strings.
+def initialize(pop, library, n, hypP, constraints): # population, library (a directory), number of airfoils, hyperparameters, constraints 
+    gen = [] # creating the generation 0
+    for ind in range(pop):
+        airfoil_list = []
+        for i in range(n-1):
+            airfoil_list.append(random.randint(0,127))
+        gen.append(Airfoil(encode(airfoil_list)))
+        name = 'a'+str(ind)
+        Merge(library, decode(gen[-1].genome), name)
+        Polar(name, iterations = 100)
+        fitness = obj_fun(name, hypP, constraints)
+        gen[-1].set_fitness(fitness)
+    return gen
+    
 
-    Parameters
-    ----------
-    n : int
-        Number of airfoils in the initial library.
-    ind : int
-        Index of the airfoil.
-
-    Returns
-    -------
-    airfoil : string
-        Binary string representing the 'pure' airfoil.
-
-    '''
-    airfoil = ''
-    for i in range(n-1):
-        if i == ind:
-            airfoil += '1'*7 # binary for 127
-        else:
-            airfoil += '0'*7
-    return airfoil
-
-def reproduction(gen):
+def reproduction(gen, pop):
     '''
     Selects 2 parent airfoils using a "weighted roulette" approach
+    The function returns the indexes of the two airfoils selected
     '''
     pop = len(gen)
-    w = [gen[i].fitness for i in range(pop)] # probabilities of survival
-    parent1, parent2 = random.choices(gen, weights=w, k = 2)
-    return parent1, parent2
+    w = [gen[i].fitness for i in range(pop)]    # probabilities of survival
+    indexes = np.linspace(0, pop-1, num=pop)    # list with all the indexes: 0, 1, 2, 3, ..., pop-1
+    index1, index2 = random.choices(indexes, weights=w, k = 2)
+    return int(index1), int(index2)
 
-def crossover(parent1, parent2, pc):
+def crossover(gen, index1, index2, pc):
     '''
     Performs crossovers at a rate defined by pc
+    The function returns the modified strings
     '''
     def cross(s1, s2):
         cross_locus = random.randint(1,length-1)
         return s1[0:cross_locus] + s2[cross_locus:], s2[0:cross_locus] + s1[cross_locus:]
-    length = len(parent1.genome)
+    length = len(gen[index1].genome)
     if random.random() <= pc:
-        parent1.genome, parent2.genome = cross(parent1.genome, parent2.genome)
-    return parent1, parent2
-        
-def mutation(individual, pm):
+        return cross(gen[index1].genome, gen[index2].genome)#Return the two modified strings
+    return gen[index1].genome, gen[index2].genome           #Return the original strings
+
+def elitism(gen):
+    '''
+    Select the two best airfoils based on their fitness values and return their genome
+    '''
+    pop = len(gen)
+    w   = [gen[i].fitness for i in range(pop)]
+    index1, index2 = heapq.nlargest(2, range(pop), w.__getitem__)
+    # print(f'Best index = {index1}, {index2}')
+    return gen[index1].genome, gen[index2].genome
+    
+def mutation(string, pm):
     '''
     Performs a mutation at a random location
     '''
     if random.random()<=pm:
-        length = len(individual[0])
-        location = random.randint(0,length)
-        if individual.genome[location] == '0':
-            individual.genome[location] = '1'
+        length   = len(string)
+        location = random.randint(0,length-1)#
+        print('Mutation position:: ', location)
+        if string[location] == '0':
+            string = string[:location]+'1'+string[location+1:]
         else:
-            individual.genome[location] = '0'
-    return individual
+            string = string[:location]+'0'+string[location+1:]
+    return string
 
-def fitness(gen):
-    '''
-    Will calculate the fitness of an airfoil and return it.
-    In practice, given the airfoil string, will create the .dat using the merge
-    funciton of PYfoil file and have the obj_fun analize it
-    Will also calculate the probability of survival.
-    
-    Parameters
-    ----------
-    gen : list (of lists)
-        list of binary strings of the airfoils and their respective fitness values.
-
-    Returns
-    -------
-    None.
-
-    '''
-    pass
 
 def ga(n, pop, pc, pm, max_iter, library, hypP, constraints):
     # INITIALIZATION
     if pop%2 != 0:
         raise ValueError('The population size must be an even number')
+    # out = open('out.txt', 'w')
+    gen = initialize(pop, library, n, hypP, constraints)
         
-    gen = []
-    w = random.choices(range(500), k = 10) # example weights
-    for ind in range(pop):
-        airfoil_list = []
-        for i in range(n-1):
-            airfoil_list.append(random.randint(0,127))
-        gen.append(Airfoil(encode(airfoil_list), w[ind]))
     # Algorithm
-    new_gen = gen
+    new_gen      = gen.copy() 
+    fitness_list = np.zeros(max_iter*pop)
+    
     for it in range(max_iter):
-        gen = new_gen
+        gen     = new_gen.copy()
+        # for i in range(pop):
+        #     print(decode(gen[i].genome))
         new_gen = []
-        for i in range(int(pop/2)): # genetic operations
-            parent1, parent2 = reproduction(gen)
-            child1, child2 = crossover(parent1, parent2, pc)
-            child1 = mutation(child1, pm)
-            child2 = mutation(child2, pm)
-            new_gen.append(child1)
-            new_gen.append(child2)
+         
+        for i in range(int((pop-2)/2)): # genetic operations
+            index1, index2 = reproduction(gen, pop)# index1 and index2 are the airfoils selected
+            # print(f'AfterReproduction: {index1}')
+            # print(f'AfterReproduction: {index2}')
+            S_child1, S_child2 = crossover(gen, index1, index2, pc)# Return the string with the modified genomes
+
+            # print(f'AfterCrossover: {S_child1}')
+            # print(f'AfterCrossover: {S_child2}')
+            S_child1 = mutation(S_child1, pm)# Return the string with the modified genomes
+            S_child2 = mutation(S_child2, pm)
+            # print(f'AfterMutation:  {S_child1}')
+            # print(f'AfterMutation:  {S_child2}')
+            # pp1 = decode(S_child1)
+            # pp2 = decode(S_child2)
+            # print(f'Decode: {pp1}')
+            # print(f'Decode: {pp2}')
+            new_gen.append(Airfoil(S_child1))# New elements, given its string (genome)
+            new_gen.append(Airfoil(S_child2))
+            # print('\n')
+
+        
+        # elitism
+        best = elitism(gen)                 # Return the strings of the best two airfoils
+        new_gen.append(Airfoil(best[0]))    # New elements, given its string (genome)
+        new_gen.append(Airfoil(best[1]))
+        
+        print('\n New generations:')        
         for ind in range(pop):
             percentage = decode(new_gen[ind].genome)
+            print(f'Percentages: {percentage}')
             new_name = 'a'+str(ind)
             Merge(library, percentage, new_name)
-            Polar(new_name, iterations = 500)
-            # new_gen[ind].fitness = obj_fun(new_name, hypP, constraints)
+            Polar(new_name, iterations = 100)
+            new_gen[ind].fitness = obj_fun(new_name, hypP, constraints)
+            fitness_list[(it)*pop+ind] = new_gen[ind].fitness    
+            print(new_gen[ind].fitness)
+        
+        # out.write(f'Iteration {it+1}\n')
+        # fprint_results(out, new_gen)
+    
+    #PLOTS
+    plot_iterations(max_iter, pop, fitness_list)
+    plot_data(pop)
+    # out.close()
     return new_gen
 
 
@@ -148,28 +182,26 @@ def decode(airfoil_str):
     '''
     Translates the airfoil representation from the binary string to a list of integers.
     '''
-    n = int(len(airfoil_str)/7 + 1 )
+    n = int(len(airfoil_str)/7)
     split = [airfoil_str[i:i+7] for i in range(0, len(airfoil_str), 7)]
     decoded = []
-    for i in range(n-1):
+    for i in range(n):
         decoded.append(format(int(split[i],2)/127,'.3f'))
     return decoded
 
-
-if __name__ == '__main__': # this runs only if this script is the main, thus allowing to import it in other scripts without issues
-    n = 2 # number of airfoils in the library
-    pop = 4 # number of airfoils per generation
-    pc = 0.5 # probability of crossover
-    pm = 0.001 # probablity of mutation
-    max_iter = 2 # maximum number of generations
-    library = 'library'
-    hypP    = np.multiply([1, 1, 1, 1, 1], 10)      #Hyperparameters, to be set manually (trial and error)
-    constraints = (1.2, 6.0)  
+def fprint_results(out, gen):
+    for i in range(len(gen)):
+        out.write(f'Airfoil {gen[i].genome}: {gen[i].fitness}\n')
+        
+if __name__ == '__main__':  # this runs only if this script is the main, thus allowing to import it in other scripts without issues
+    n           = 4    # number of airfoils in the library
+    pop         = 8    # number of airfoils per generation
+    pc          = 0.5  # probability of crossover
+    pm          = 0.5  # probablity of mutation
+    max_iter    = 5    # maximum number of generations
+    library     = 'library'
+    hypP        = np.array([6, 1, 1/6, 5, 5]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
+    constraints = (1, 3)  
     new = ga(n, pop, pc, pm, max_iter, library, hypP, constraints)
 
-
-
-
-
-
-
+           

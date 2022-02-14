@@ -1,5 +1,5 @@
  
-load generation/a3.dat
+load generation/a7.dat
 PANE
 OPER
 Vpar
@@ -8,13 +8,13 @@ xtr
 1.0
 1.0
  
-iter 500
+iter 100
 visc 350000.0
 Mach
 0
 PACC
-data/a3.log
+data/a7.log
  
-aseq 0.0 10.0 0.25
+aseq -2.0 15.0 0.5
  
 quit
