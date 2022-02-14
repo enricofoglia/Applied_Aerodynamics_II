@@ -23,10 +23,32 @@ def plot_airfoil(x,y):
     ax.set_aspect('equal',adjustable='box') 
     
     
-path = '/Users/enricofoglia/Documents/ISAE-SUPAERO1/Applied Aerodynamics II/airfoils/GOGETA.dat'
-GOGx,GOGy = read_airfoil(path) 
-plot_airfoil(GOGx,GOGy)
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a0.dat'
+# x,y = read_airfoil(path) 
+# plot_airfoil(x,y)
 
-path = '/Users/enricofoglia/Documents/ISAE-SUPAERO1/Applied Aerodynamics II/airfoils/Keemera.dat'
-KEEx,KEEy = read_airfoil(path) 
-plot_airfoil(KEEx,KEEy)
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a1.dat'
+# x1,y1 = read_airfoil(path) 
+# plot_airfoil(x,y)
+
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a2.dat'
+# x,y = read_airfoil(path) 
+# plot_airfoil(x,y)
+
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a3.dat'
+# x,y = read_airfoil(path) 
+# plot_airfoil(x,y)
+
+path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a6.dat'
+x_,y_ = read_airfoil(path) 
+plot_airfoil(x_,y_)
+
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/library/AH79100C.dat'
+# xe,ye = read_airfoil(path) 
+# plot_airfoil(xe,ye)
+
+
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/library/e216.dat'
+# xd,yd = read_airfoil(path) 
+# plot_airfoil(xd,yd)
+
