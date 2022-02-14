@@ -64,18 +64,18 @@ def obj_fun(name, hypP, constraints, Cl_minD = 1.1, Cl_maxD = 1.7, Cl_cruise = 1
     # CONSTRAINT
     S_cl, S_alpha = constraints
     
-    if Cl_max < S_cl*Cl_maxD or Delta_alpha < S_alpha:
-        data = np.zeros(5)                      # The function of the airfoil will be zero
+    if Cl_max > S_cl*Cl_cruise and Delta_alpha > S_alpha:
+        data = [End_max-135, Cl_max, Delta_alpha, End_Cl_133-135, End_integral-65]
+    else:
+        data = [0, 0, 0, 0, 0]                    # The function of the airfoil will be zero
     #-----------------------------------------------------------------------------
-     
     
     # OBJECTIVE FUNCTION
     #All the parameters are multiplied for their hyperparameters and are summed
-    f = sum(hypP[i]*data[i] for i in range(5))   
-    #-----------------------------------------------------------------------------
-    if f<=0: # avoid negative values 
+    f = sum(hypP[i]*data[i] for i in range(5))
+    if f < 0:
         f = 1
-
+        
     return f
 
 if __name__ == '__main__':

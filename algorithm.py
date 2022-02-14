@@ -15,7 +15,7 @@ Created on Thu Feb  3 11:20:02 2022
 - Every airfoil is represented as a string of binary values representing the 
 percentage of merging of the initial profiles.
 As a first iteration percentages will go from 0 to 100 (integers), thus requiring 
-a string length of 7 for each percentage (from '0000000' to '1100100').
+a string length of 7 for each percentage.
 Given the example of a candidate library on n=4 airfoils A, B, C, D, the encoding
 represents the percentage of A, then that of AB (previous merge), then that of ABC
 (previuos merge) 
@@ -31,8 +31,6 @@ import heapq
 import random
 import matplotlib.pyplot as plt
 from obj_fun import obj_fun
-from plot_data import plot_data
-from plot_iterations import plot_iterations
 from PYfoil import *
 
 class Airfoil: 
@@ -103,6 +101,59 @@ def mutation(string, pm):
         else:
             string = string[:location]+'0'+string[location+1:]
     return string
+
+def plot_data(pop):
+    '''
+    Plot the Endurance over Cl for all the airfoils
+    '''
+    plt.figure()
+    plt.grid(which='major', axis='both')
+    for i in range(pop):
+        name = 'data/a'+str(i)+'.log' # .txt for XFLR5 outputs
+        acquisition = np.loadtxt(name, skiprows=12) #skiprows=11 for XFLR5 outputs, skiprows=12 for XFOIL outputs
+        Cl      = acquisition[:,1]
+        Cd      = acquisition[:,2]
+        End = np.zeros(len(Cl))
+        for i in range(len(Cl)-1):
+                End[i] = Cl[i]**1.5/Cd[i]
+        plt.plot(Cl, End, color = 'tab:blue')
+        plt.axis([0.9, 2.0, 100, 160])
+        plt.xlabel('Cl')
+        plt.ylabel('Endurance')
+
+    for i in range (4):
+        name = 'reference_data/a_ref_'+str(i)+'.txt' # .txt for XFLR5 outputs
+        acquisition = np.loadtxt(name, skiprows=11) #skiprows=11 for XFLR5 outputs, skiprows=12 for XFOIL outputs
+        Cl      = acquisition[:,1]
+        Cd      = acquisition[:,2]
+        End = np.zeros(len(Cl))
+        for i in range(len(Cl)-1):
+                End[i] = Cl[i]**1.5/Cd[i]
+        plt.plot(Cl, End, 'k--')
+        plt.axis([0.9, 2.0, 100, 160])
+        plt.xlabel('Cl')
+        plt.ylabel('Endurance')     
+    return
+
+
+def plot_iterations(max_iter, pop, fitness):
+    '''
+    PLOT of the fitnes function at every iteration
+    '''
+    plt.figure()
+    mean = np.zeros(max_iter)   
+    for it in range(max_iter):
+        for p in range(pop):
+            plt.plot(it+1, fitness[it*pop+p], 'ro', markersize=3)
+            mean[it] = mean[it] + fitness[it*pop+p]
+        mean[it] = mean[it]/pop
+    plt.plot(range(1,max_iter+1), mean, 'ko--', markersize=3)
+    plt.xlim((0, max_iter+1))
+    plt.grid(which='major', axis='both')
+    plt.xlabel('iteration')
+    plt.ylabel('fitness')
+    return
+
 
 
 def ga(n, pop, pc, pm, max_iter, library, hypP, constraints):
