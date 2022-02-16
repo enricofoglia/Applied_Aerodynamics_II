@@ -267,7 +267,7 @@ def BL_graphics(data, params = ()):
 if __name__ == '__main__':
     directory = 'library'
     Merge(directory,[0.8234],'a0')
-    Polar('a0',0.35e6,0,1,1,9,100,0,15,1)
+    Polar('a0',0.35e6,0,1,1,9,100,0,15,1) # airfoil, Re = 350e3, M = 0, x_tr_top = 1.0, x_tr_bot = 1.0, N_crit = 9.0, iterations = 100, alpha_min = -2.0, alpha_max = 15.0, step = 0.5
 
     
         

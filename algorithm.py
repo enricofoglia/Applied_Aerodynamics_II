@@ -189,7 +189,7 @@ def plot_iterations(max_iter, pop, fitness):
 
 
 
-def ga(n, pop, pc, pm, max_iter, library, hypP, constraints, fitness_scaling = 0):
+def ga(n, pop, pc, pm, library, hypP, constraints, max_iter = 100, fitness_scaling = 0):
     # INITIALIZATION
     if pop%2 != 0:
         raise ValueError('The population size must be an even number')
@@ -232,16 +232,16 @@ def ga(n, pop, pc, pm, max_iter, library, hypP, constraints, fitness_scaling = 0
         new_gen.append(Airfoil(best[0]))    # New elements, given its string (genome)
         new_gen.append(Airfoil(best[1]))
         
-        print('\n New generations:')        
+        # print('\n New generations:')        
         for ind in range(pop):
             percentage = decode(new_gen[ind].genome)
-            print(f'Percentages: {percentage}')
+            # print(f'Percentages: {percentage}')
             new_name = 'a'+str(ind)
             Merge(library, percentage, new_name)
             Polar(new_name, iterations = 100)
             new_gen[ind].fitness = obj_fun(new_name, hypP, constraints)
             fitness_list[(it)*pop+ind] = new_gen[ind].fitness    
-            print(new_gen[ind].fitness)
+            # print(new_gen[ind].fitness)
         
         # out.write(f'Iteration {it+1}\n')
         # fprint_results(out, new_gen)
@@ -278,14 +278,23 @@ def fprint_results(out, gen):
         out.write(f'Airfoil {gen[i].genome}: {gen[i].fitness}\n')
         
 if __name__ == '__main__':  # this runs only if this script is the main, thus allowing to import it in other scripts without issues
-    n           = 4    # number of airfoils in the library
-    pop         = 20    # number of airfoils per generation
+    import os
+    import sys
+    sys.path.insert(1, '/Users/enricofoglia/Documents/python')
+    from send_message import send_message
+    n           = len(os.listdir('library'))
+    # number of airfoils in the library
+    pop         = 20   # number of airfoils per generation
     pc          = 0.5  # probability of crossover
     pm          = 0.05  # probablity of mutation
-    max_iter    = 50    # maximum number of generations
+    max_iter    = 20    # maximum number of generations
     library     = 'library'
-    hypP        = np.array([6, 1, 1/6, 5, 5]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
+    hypP        = np.array([0.1, 1, 1, 50, 5]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
     constraints = (1, 3)  
-    new = ga(n, pop, pc, pm, max_iter, library, hypP, constraints, fitness_scaling=2)
+    try:
+        new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter = 200, fitness_scaling=2)
+        send_message('Ehi boi, il codice ha finito di runnare, vai a darci un occhio!')
+    except:
+        send_message('Ohi bro, qualcosa è andato storto!\nVai a controllare asap!')
 
            

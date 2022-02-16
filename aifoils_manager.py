@@ -21,7 +21,8 @@ def plot_airfoil(x,y):
     ax.grid(True)
     ax.set_ylim((-0.1, 0.2))
     ax.set_aspect('equal',adjustable='box') 
-    
+
+
     
 # path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a0.dat'
 # x,y = read_airfoil(path) 
@@ -39,9 +40,9 @@ def plot_airfoil(x,y):
 # x,y = read_airfoil(path) 
 # plot_airfoil(x,y)
 
-path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a6.dat'
-x_,y_ = read_airfoil(path) 
-plot_airfoil(x_,y_)
+# path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/generation/a6.dat'
+# x_,y_ = read_airfoil(path) 
+# plot_airfoil(x_,y_)
 
 # path = '/Users/enricofoglia/Documents/git/Applied_Aerodynamics_II/library/AH79100C.dat'
 # xe,ye = read_airfoil(path) 
