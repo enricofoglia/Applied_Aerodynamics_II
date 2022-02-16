@@ -54,13 +54,16 @@ def initialize(pop, library, n, hypP, constraints): # population, library (a dir
     return gen
     
 
-def reproduction(gen, pop):
+def reproduction(gen, pop, fitness_scaling): # 16/02/2022: modified to account for scaling
     '''
     Selects 2 parent airfoils using a "weighted roulette" approach
     The function returns the indexes of the two airfoils selected
     '''
     pop = len(gen)
     w = [gen[i].fitness for i in range(pop)]    # probabilities of survival
+    if fitness_scaling != 0: # linear fitness scaling
+        a, b = pre_scaling(gen, fitness_scaling)
+        w = [a*w[i] + b for i in range(pop)]
     indexes = np.linspace(0, pop-1, num=pop)    # list with all the indexes: 0, 1, 2, 3, ..., pop-1
     index1, index2 = random.choices(indexes, weights=w, k = 2)
     return int(index1), int(index2)
@@ -102,6 +105,36 @@ def mutation(string, pm):
             string = string[:location]+'0'+string[location+1:]
     return string
 
+def pre_scaling(gen, C): # 16/02/2022: added 
+    '''
+    Generates the coefficients a and b to perform a linear fitness scaling such 
+    that:
+        f' = a*f + b
+    respecting the constraints:
+        f'_avg = f_avg
+        f'_max = C*f_avg
+        f'_min > 0
+    '''
+    pop = len(gen)
+    f_avg = 0 # average fitness
+    f_max = 0 # maximum fitness
+    f_min = 1E6 # minimum fitness
+    for i in range(pop):
+        f_avg += gen[i].fitness/pop
+        if gen[i].fitness > f_max:
+            f_max = gen[i].fitness
+        if gen[i].fitness < f_min:
+            f_min = gen[i].fitness
+    if f_min > (C*f_avg - f_max)/(C-1): # respecting non negativity
+        delta = f_max - f_min
+        a = (C-1)*f_avg/delta
+        b = f_avg*(f_max - C*f_avg)/delta
+    else: # max possible scaling
+        delta = f_avg - f_min
+        a = f_avg/delta
+        b = -f_min*f_avg/delta
+    return a,b 
+    
 def plot_data(pop):
     '''
     Plot the Endurance over Cl for all the airfoils
@@ -156,7 +189,7 @@ def plot_iterations(max_iter, pop, fitness):
 
 
 
-def ga(n, pop, pc, pm, max_iter, library, hypP, constraints):
+def ga(n, pop, pc, pm, max_iter, library, hypP, constraints, fitness_scaling = 0):
     # INITIALIZATION
     if pop%2 != 0:
         raise ValueError('The population size must be an even number')
@@ -174,7 +207,7 @@ def ga(n, pop, pc, pm, max_iter, library, hypP, constraints):
         new_gen = []
          
         for i in range(int((pop-2)/2)): # genetic operations
-            index1, index2 = reproduction(gen, pop)# index1 and index2 are the airfoils selected
+            index1, index2 = reproduction(gen, pop, fitness_scaling)# index1 and index2 are the airfoils selected
             # print(f'AfterReproduction: {index1}')
             # print(f'AfterReproduction: {index2}')
             S_child1, S_child2 = crossover(gen, index1, index2, pc)# Return the string with the modified genomes
@@ -246,13 +279,13 @@ def fprint_results(out, gen):
         
 if __name__ == '__main__':  # this runs only if this script is the main, thus allowing to import it in other scripts without issues
     n           = 4    # number of airfoils in the library
-    pop         = 8    # number of airfoils per generation
+    pop         = 20    # number of airfoils per generation
     pc          = 0.5  # probability of crossover
-    pm          = 0.5  # probablity of mutation
-    max_iter    = 5    # maximum number of generations
+    pm          = 0.05  # probablity of mutation
+    max_iter    = 50    # maximum number of generations
     library     = 'library'
     hypP        = np.array([6, 1, 1/6, 5, 5]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
     constraints = (1, 3)  
-    new = ga(n, pop, pc, pm, max_iter, library, hypP, constraints)
+    new = ga(n, pop, pc, pm, max_iter, library, hypP, constraints, fitness_scaling=2)
 
            

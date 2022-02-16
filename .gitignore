@@ -1,2 +1,8 @@
 # Ignore Mac System files
 .DS_Store
+# other files of no interest for the user
+/00.bl
+# file genererated when running the algorithm
+input_file.in
+generation/
+data/
