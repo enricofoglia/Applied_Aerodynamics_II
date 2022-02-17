@@ -16,7 +16,6 @@ def Merge(directory,
           newname,
           ):
     airfoils = os.listdir(directory)
-    print(airfoils)
     with open('input_file.in', 'w') as f:
         f.write('\nload library/' + airfoils[0] + '\n')
         for i in range(len(percentage)):
@@ -33,20 +32,18 @@ def Merge(directory,
         f.write('quit')
     if os.path.exists('generation/'+newname+'.dat'):
         os.remove('generation/'+newname+'.dat')
-    sp.run('Xfoil/bin/xfoil < input_file.in', shell=True)  # WANRNING: has to be adapted to the operating system
+    sp.run('Xfoil/bin/xfoil < input_file.in', shell=True, capture_output = True)  # WANRNING: has to be adapted to the operating system
 
-def Polar(airfoil,
+def create_input_polar(airfoil,
+          iterations = 100,
           Re = 350e3,
           M = 0,
           x_tr_top = 1.0,
           x_tr_bot = 1.0,
           N_crit = 9.0,
-          iterations = 100,
           alpha_min = -2.0,
           alpha_max = 15.0,
-          step = 0.5
-          ):
-    
+          step = 0.5): # 16/02/2022: moved outside to be able to call it multiple times
     with open('input_file.in', 'w') as f:
         # f.write(' \n')
         # f.write('plop\n')
@@ -71,12 +68,52 @@ def Polar(airfoil,
         f.write(f'aseq {alpha_min} {alpha_max} {step}\n') # command for Airfoil, concerning AoA sequences
         f.write(' \n')     # escape OPER
         f.write('quit\n')  # exit
+
+def Polar(airfoil,
+          iterations = 100,
+          Re = 350e3,
+          M = 0,
+          x_tr_top = 1.0,
+          x_tr_bot = 1.0,
+          N_crit = 9.0,
+          alpha_min = -2.0,
+          alpha_max = 15.0,
+          step = 0.5
+          ):
+    
         # Deleate the polar if already existing
     if os.path.exists('data/'+airfoil + '.log'):
         os.remove('data/'+airfoil + '.log')
-        # Run Xfoil   
-    sp.run('Xfoil/bin/xfoil < input_file.in', shell=True) # WANRNING: has to be adapted to the operating system
-
+        # Run Xfoil  
+    create_input_polar(airfoil = airfoil,
+                 iterations = iterations,
+                 Re = Re,
+                 M = M, 
+                 x_tr_top= x_tr_top,
+                 x_tr_bot = x_tr_bot,
+                 N_crit = N_crit,  
+                 alpha_min = alpha_min,
+                 alpha_max = alpha_max,
+                 step = step)
+    out_message = sp.run('Xfoil/bin/xfoil < input_file.in', shell=True, capture_output = True) # WANRNING: has to be adapted to the operating system
+    error = 'Sequence halted since previous  4 points did not converge'
+    CONV_FLAG = 3
+    while error in str(out_message.stdout) and CONV_FLAG > 0: # 16/02/2022: try to add convergence check
+        create_input_polar(airfoil = airfoil,
+                      Re = Re,
+                      M = M, 
+                      x_tr_top= x_tr_top,
+                      x_tr_bot = x_tr_bot,
+                      N_crit = N_crit, 
+                      iterations = iterations + 100, 
+                      alpha_min = alpha_min + 2,
+                      alpha_max = alpha_max - 2,
+                      step = step)
+        CONV_FLAG += -1
+        os.remove('data/'+airfoil + '.log')
+        out_message = sp.run('Xfoil/bin/xfoil < input_file.in', shell=True, capture_output = True) # WANRNING: has to be adapted to the operating system
+        print('Convergence failed once\n')
+        
 
 def calculate_polar(airfoil,
                     Re = 350e3,
@@ -267,7 +304,7 @@ def BL_graphics(data, params = ()):
 if __name__ == '__main__':
     directory = 'library'
     Merge(directory,[0.8234],'a0')
-    Polar('a0',0.35e6,0,1,1,9,100,0,15,1) # airfoil, Re = 350e3, M = 0, x_tr_top = 1.0, x_tr_bot = 1.0, N_crit = 9.0, iterations = 100, alpha_min = -2.0, alpha_max = 15.0, step = 0.5
+    Polar('a0',1)#,0.35e6,0,1,1,9,0,15,1) # airfoil, Re = 350e3, M = 0, x_tr_top = 1.0, x_tr_bot = 1.0, N_crit = 9.0, iterations = 100, alpha_min = -2.0, alpha_max = 15.0, step = 0.5
 
     
         

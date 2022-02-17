@@ -21,9 +21,7 @@ represents the percentage of A, then that of AB (previous merge), then that of A
 (previuos merge) 
 """
 
-# TODO: some plotting of max and medium fitness through generations
 # TODO: some plotting of the evolution of airfoils
-# TODO: implement scaling of the obj_fun and or normalization of the terms
 
 
 import numpy as np
@@ -135,7 +133,7 @@ def pre_scaling(gen, C): # 16/02/2022: added
         b = -f_min*f_avg/delta
     return a,b 
     
-def plot_data(pop):
+def plot_data(pop,n): # 16/02/2022 modified to account for different library sizes
     '''
     Plot the Endurance over Cl for all the airfoils
     '''
@@ -154,7 +152,7 @@ def plot_data(pop):
         plt.xlabel('Cl')
         plt.ylabel('Endurance')
 
-    for i in range (4):
+    for i in range (n-1): # the minus one is temporary for the lack of one polar xoxo
         name = 'reference_data/a_ref_'+str(i)+'.txt' # .txt for XFLR5 outputs
         acquisition = np.loadtxt(name, skiprows=11) #skiprows=11 for XFLR5 outputs, skiprows=12 for XFOIL outputs
         Cl      = acquisition[:,1]
@@ -189,7 +187,7 @@ def plot_iterations(max_iter, pop, fitness):
 
 
 
-def ga(n, pop, pc, pm, library, hypP, constraints, max_iter = 100, fitness_scaling = 0):
+def ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling = 0):
     # INITIALIZATION
     if pop%2 != 0:
         raise ValueError('The population size must be an even number')
@@ -232,7 +230,7 @@ def ga(n, pop, pc, pm, library, hypP, constraints, max_iter = 100, fitness_scali
         new_gen.append(Airfoil(best[0]))    # New elements, given its string (genome)
         new_gen.append(Airfoil(best[1]))
         
-        # print('\n New generations:')        
+        print(f'\n New generation: {it+1}')        
         for ind in range(pop):
             percentage = decode(new_gen[ind].genome)
             # print(f'Percentages: {percentage}')
@@ -248,7 +246,7 @@ def ga(n, pop, pc, pm, library, hypP, constraints, max_iter = 100, fitness_scali
     
     #PLOTS
     plot_iterations(max_iter, pop, fitness_list)
-    plot_data(pop)
+    plot_data(pop,n)
     # out.close()
     return new_gen
 
@@ -282,19 +280,18 @@ if __name__ == '__main__':  # this runs only if this script is the main, thus al
     import sys
     sys.path.insert(1, '/Users/enricofoglia/Documents/python')
     from send_message import send_message
-    n           = len(os.listdir('library'))
-    # number of airfoils in the library
-    pop         = 20   # number of airfoils per generation
+    n           = len(os.listdir('library')) # number of airfoils in the library
+    pop         = 50   # number of airfoils per generation
     pc          = 0.5  # probability of crossover
     pm          = 0.05  # probablity of mutation
-    max_iter    = 20    # maximum number of generations
+    max_iter    = 50   # maximum number of generations
     library     = 'library'
-    hypP        = np.array([0.1, 1, 1, 50, 5]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
-    constraints = (1, 3)  
+    hypP        = np.array([0.1, 1, 1, 1, 1]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
+    constraints = (1.2, 3)  
     try:
-        new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter = 200, fitness_scaling=2)
+        new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling=1.2)
         send_message('Ehi boi, il codice ha finito di runnare, vai a darci un occhio!')
     except:
-        send_message('Ohi bro, qualcosa è andato storto!\nVai a controllare asap!')
+        send_message('/!\ Ohi bro, qualcosa è andato storto!\nVai a controllare asap!')
 
            
