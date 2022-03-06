@@ -86,7 +86,6 @@ def elitism(gen):
     pop = len(gen)
     w   = [gen[i].fitness for i in range(pop)]
     index1, index2 = heapq.nlargest(2, range(pop), w.__getitem__)
-    # print(f'Best index = {index1}, {index2}')
     return gen[index1].genome, gen[index2].genome
     
 def mutation(string, pm):
@@ -279,21 +278,25 @@ def fprint_results(out, gen):
         
 if __name__ == '__main__':  # this runs only if this script is the main, thus allowing to import it in other scripts without issues
     import os
-    import sys
-    sys.path.insert(1, '/Users/enricofoglia/Documents/python')
-    from send_message import send_message
+    # import sys
+    # sys.path.insert(1, '/Users/enricofoglia/Documents/python')
+    # from send_message import send_message
     n           = len(os.listdir('library')) # number of airfoils in the library
-    pop         = 50   # number of airfoils per generation
+    pop         = 6   # number of airfoils per generation, must be even
     pc          = 0.5  # probability of crossover
     pm          = 0.05  # probablity of mutation
-    max_iter    = 75   # maximum number of generations
+    max_iter    = 5   # maximum number of generations
     library     = 'library'
     hypP        = np.array([0, 0, 0, 1, 1]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
     constraints = (1.2, 3)  
-    try:
-        new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling=1.2)
-        send_message('Ehi boi, il codice ha finito di runnare, vai a darci un occhio!')
-    except:
-        send_message('/!\ Ohi bro, qualcosa è andato storto!\nVai a controllare asap!')
+    new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling=2)
+    w   = [new[i].fitness for i in range(pop)]
+    index = heapq.nlargest(1, range(pop), w.__getitem__)
+    best_airfoil = new[index[0]]
+    # try:
+    #     new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling=1.2)
+    #     send_message('The code run successfully')
+    # except:
+    #     send_message('/!\ A problem occurred when running the code')
 
            
