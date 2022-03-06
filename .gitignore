@@ -1,8 +1,12 @@
 # Ignore Mac System files
 .DS_Store
 # other files of no interest for the user
-/00.bl
+:00.bl
 # file genererated when running the algorithm
 input_file.in
+out.txt
 generation/
 data/
+# otherfiles not related to the algorithm
+aifoils_manager.py
+XFLR5dataReader.py

@@ -8,7 +8,7 @@ import numpy as np
 
 
 # Object function
-def obj_fun(name, hypP, constraints, Cl_minD = 1.1, Cl_maxD = 1.7, Cl_cruise = 1.33):
+def obj_fun(name, hypP, constraints, Cl_minD = 0.9, Cl_maxD = 1.4, Cl_cruise = 1.2):
         
     
        
@@ -58,14 +58,14 @@ def obj_fun(name, hypP, constraints, Cl_minD = 1.1, Cl_maxD = 1.7, Cl_cruise = 1
     End[Cl>Cl_maxD] = 0
     End_integral = sum(End[i]*(Cl[i+1]-Cl[i]) for i in range(len(Cl)-1))
 
-    data = [End_max-100, Cl_max, Delta_alpha, End_Cl_133-100, End_integral-50]
+    data = [End_max-100, Cl_max, Delta_alpha, End_Cl_133, End_integral-50] # remember to change
     #-------------------------------------------------------------------------
     
     # CONSTRAINT
     S_cl, S_alpha = constraints
     
     if Cl_max > S_cl*Cl_cruise and Delta_alpha > S_alpha:
-        data = [End_max-100, Cl_max, Delta_alpha, End_Cl_133-100, End_integral-50]
+        data = [End_max-100, Cl_max, Delta_alpha, End_Cl_133, End_integral-50] # remember to change
     else:
         data = [0, 0, 0, 0, 0]                    # The function of the airfoil will be zero
     #-----------------------------------------------------------------------------

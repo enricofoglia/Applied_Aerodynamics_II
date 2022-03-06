@@ -97,22 +97,23 @@ def Polar(airfoil,
                  step = step)
     out_message = sp.run('Xfoil/bin/xfoil < input_file.in', shell=True, capture_output = True) # WANRNING: has to be adapted to the operating system
     error = 'Sequence halted since previous  4 points did not converge'
-    CONV_FLAG = 3
-    while error in str(out_message.stdout) and CONV_FLAG > 0: # 16/02/2022: try to add convergence check
+    CONV_FLAG = 1
+    while error in str(out_message.stdout) and CONV_FLAG <= 3: # 16/02/2022: try to add convergence check
         create_input_polar(airfoil = airfoil,
                       Re = Re,
                       M = M, 
                       x_tr_top= x_tr_top,
                       x_tr_bot = x_tr_bot,
                       N_crit = N_crit, 
-                      iterations = iterations + 100, 
-                      alpha_min = alpha_min + 2,
-                      alpha_max = alpha_max - 2,
+                      iterations = iterations + CONV_FLAG*100, #### Change 
+                      alpha_min = 0, # should improve convergence
+                      alpha_max = alpha_max - CONV_FLAG*2,
                       step = step)
-        CONV_FLAG += -1
         os.remove('data/'+airfoil + '.log')
         out_message = sp.run('Xfoil/bin/xfoil < input_file.in', shell=True, capture_output = True) # WANRNING: has to be adapted to the operating system
-        print('Convergence failed once\n')
+        print(f'Convergence failed {CONV_FLAG} times\n')
+        CONV_FLAG += 1
+
         
 
 def calculate_polar(airfoil,

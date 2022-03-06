@@ -17,7 +17,7 @@ percentage of merging of the initial profiles.
 As a first iteration percentages will go from 0 to 100 (integers), thus requiring 
 a string length of 7 for each percentage.
 Given the example of a candidate library on n=4 airfoils A, B, C, D, the encoding
-represents the percentage of A, then that of AB (previous merge), then that of ABC
+represents the percentage of B in A, then that of C in AB (previous merge), then that of D in ABC
 (previuos merge) 
 """
 
@@ -46,7 +46,7 @@ def initialize(pop, library, n, hypP, constraints): # population, library (a dir
         gen.append(Airfoil(encode(airfoil_list)))
         name = 'a'+str(ind)
         Merge(library, decode(gen[-1].genome), name)
-        Polar(name, iterations = 100)
+        Polar(name, iterations = 100) ##### Change
         fitness = obj_fun(name, hypP, constraints)
         gen[-1].set_fitness(fitness)
     return gen
@@ -152,7 +152,7 @@ def plot_data(pop,n): # 16/02/2022 modified to account for different library siz
         plt.xlabel('Cl')
         plt.ylabel('Endurance')
 
-    for i in range (n-1): # the minus one is temporary for the lack of one polar xoxo
+    for i in range (n-2): # the minus two is temporary for the lack of one polar xoxo
         name = 'reference_data/a_ref_'+str(i)+'.txt' # .txt for XFLR5 outputs
         acquisition = np.loadtxt(name, skiprows=11) #skiprows=11 for XFLR5 outputs, skiprows=12 for XFOIL outputs
         Cl      = acquisition[:,1]
@@ -163,7 +163,8 @@ def plot_data(pop,n): # 16/02/2022 modified to account for different library siz
         plt.plot(Cl, End, 'k--')
         plt.axis([0.9, 2.0, 100, 160])
         plt.xlabel('Cl')
-        plt.ylabel('Endurance')     
+        plt.ylabel('Endurance')   
+    plt.show()  
     return
 
 
@@ -183,6 +184,7 @@ def plot_iterations(max_iter, pop, fitness):
     plt.grid(which='major', axis='both')
     plt.xlabel('iteration')
     plt.ylabel('fitness')
+    plt.show()
     return
 
 
@@ -236,7 +238,7 @@ def ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling = 0
             # print(f'Percentages: {percentage}')
             new_name = 'a'+str(ind)
             Merge(library, percentage, new_name)
-            Polar(new_name, iterations = 100)
+            Polar(new_name, iterations = 100) #### Change
             new_gen[ind].fitness = obj_fun(new_name, hypP, constraints)
             fitness_list[(it)*pop+ind] = new_gen[ind].fitness    
             # print(new_gen[ind].fitness)
@@ -284,9 +286,9 @@ if __name__ == '__main__':  # this runs only if this script is the main, thus al
     pop         = 50   # number of airfoils per generation
     pc          = 0.5  # probability of crossover
     pm          = 0.05  # probablity of mutation
-    max_iter    = 50   # maximum number of generations
+    max_iter    = 75   # maximum number of generations
     library     = 'library'
-    hypP        = np.array([0.1, 1, 1, 1, 1]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
+    hypP        = np.array([0, 0, 0, 1, 1]) #Hyperparameters: [End_max, Cl_max, Delta_alpha, End_Cl_133, End_integral]
     constraints = (1.2, 3)  
     try:
         new = ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling=1.2)
