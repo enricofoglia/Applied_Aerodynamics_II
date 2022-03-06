@@ -7,6 +7,7 @@ input_file.in
 out.txt
 generation/
 data/
+__pycache__/
 # otherfiles not related to the algorithm
 aifoils_manager.py
 XFLR5dataReader.py
