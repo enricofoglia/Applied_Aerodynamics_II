@@ -14,6 +14,7 @@ Hereafter a summary of the functionalities of the parts of the algorithm, to fac
 2. PYfoil.py: contains the dedicated function to run Xfoil and plot polars and boundary layer solutions;
 3. obj_fun.py: encode the objective function to be maximized.
 
-As inputs the program requires a library of candidate shapes, to be stored in a folder named 'library' in the same folder as the project. A folder for the resulting airfoils called 'generation' and one for the computed perfomances called 'data' are also required.\
+
+As inputs the program requires a library of candidate shapes, to be stored in a folder named 'library' in the same folder as the project. A folder for the resulting airfoils called 'generation' and one for the computed perfomances called 'data' are also required. In oreder to print the results compared to a selection of other airfoils, a folder called 'reference_data' contains the respective polars, calculated previously.
 
 As output the program provides the best airfoil. A file called 'out.txt' allows to check the behaviour of the algorithm (has been particularly useful for bug detection and correction).
