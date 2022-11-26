@@ -2,7 +2,7 @@
 """
 Created on Sat Feb  5 16:23:10 2022
 
-@author: Asus
+@author: Aldo Schioppa, Enrico Foglia
 """
 
 import subprocess as sp
@@ -15,6 +15,11 @@ def Merge(directory,
           percentage,
           newname,
           ):
+    '''
+    Calls XFOIL in order to merge all airfoils in the directory according to the
+    percentages specified in 'percentage'. The new airfoil is saved in the directory 
+    'geeration/' as a .dat file with the name specified in 'newname'. 
+    '''
     airfoils = os.listdir(directory)
     with open('input_file.in', 'w') as f:
         f.write('\nload library/' + airfoils[0] + '\n')
@@ -44,6 +49,9 @@ def create_input_polar(airfoil,
           alpha_min = -2.0,
           alpha_max = 15.0,
           step = 0.5): # 16/02/2022: moved outside to be able to call it multiple times
+    '''
+    Write the input file for XFOIL for computing the polar of the airfoil.
+    '''
     with open('input_file.in', 'w') as f:
         # f.write(' \n')
         # f.write('plop\n')
@@ -80,7 +88,12 @@ def Polar(airfoil,
           alpha_max = 15.0,
           step = 0.5
           ):
-    
+    '''
+    Compute the polar of an airfoil and save the results as a .txt file 
+    in the 'data/' directory. If the convergence fails in the prescribed 
+    number of iterations, the routine is tried again three times increasing
+    the number of iterations before aborting.
+    '''
         # Deleate the polar if already existing
     if os.path.exists('data/'+airfoil + '.log'):
         os.remove('data/'+airfoil + '.log')
@@ -124,6 +137,10 @@ def calculate_polar(airfoil,
                     a_min = -5, 
                     a_max = 15, 
                     delta_a = 0.5):
+    '''
+    Run XFOIL with the input parameters in order to compute the polar and
+    store the data in a numpy matrix.
+    '''
     # write input file to run xfoil
     with open('input_file.in', 'w') as f:
         f.write(f'load {airfoil}\n')
@@ -149,6 +166,10 @@ def calculate_BL(airfoil,
                  Xtr_top = 1, Xtr_bot = 1,
                  iterations = 100,
                  alpha = 5):
+    '''
+    Run XFOIL using the input parameters in order to compute all boundary 
+    layer parameters and save them in a numpy matrix.
+    '''
     with open('input_file.in', 'w') as f:
         f.write(f'load {airfoil}.dat\n')
         f.write('pane\n')
@@ -184,6 +205,14 @@ def split_top_bottom(x):
 #%% Plotting functions
 
 def polar_graphics(data, params = (), data_min = np.array([]), data_max = np.array([])):
+    '''
+    Plot polar graphics for the data, passed as a Nx9 matrix (to be consistent with 
+    the file format of the XFOIL output). 
+    If parameters are passed in 'params', these can be displayed in the titles of the 
+    figures. 
+    If 'data_min' and 'data_max' are passed, the plots include error bars by shading the 
+    area enclosed by these two curves.
+    '''
     
     alpha, CL, CD, CDp, Cm, xtr_top, xtr_bottom, _, _ = np.split(data, 9, axis = 1) # modified w.r.t XFLR5dataReader
     # CL and Cm
@@ -303,6 +332,9 @@ def BL_graphics(data, params = ()):
 
 
 if __name__ == '__main__':
+    '''
+    The main here is only used for testing purpuses.
+    '''
     directory = 'library'
     Merge(directory,[0.8234],'a0')
     Polar('a0',1)#,0.35e6,0,1,1,9,0,15,1) # airfoil, Re = 350e3, M = 0, x_tr_top = 1.0, x_tr_bot = 1.0, N_crit = 9.0, iterations = 100, alpha_min = -2.0, alpha_max = 15.0, step = 0.5
