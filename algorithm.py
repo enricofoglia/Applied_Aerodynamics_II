@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 10 21:55:46 2022
-
-@author: Asus
-"""
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -32,12 +25,19 @@ from obj_fun import obj_fun
 from PYfoil import *
 
 class Airfoil: 
+    '''
+    Class to store data relative to one airfoil
+    '''
     def __init__(self, genome):
         self.genome = genome
     def set_fitness(self, fitness):
         self.fitness = fitness
 
 def initialize(pop, library, n, hypP, constraints): # population, library (a directory), number of airfoils, hyperparameters, constraints 
+    '''
+    Initialize the ga by generating the first random generation and 
+    computing its fitness values.
+    '''
     gen = [] # creating the generation 0
     for ind in range(pop):
         airfoil_list = []
@@ -189,6 +189,70 @@ def plot_iterations(max_iter, pop, fitness):
 
 
 def ga(n, pop, pc, pm, library, hypP, constraints, max_iter, fitness_scaling = 0):
+    '''
+    Run the genetic algorithm optimization.
+    
+    Parameters:
+    ---------------
+    n : int
+        number of airfoils in the library
+        
+    pop : int
+        number of airfoils in each generation, must be even
+        
+    pc : float
+        probability of crossover. The crossover operation swaps part 
+        of two different individuals, simulating the generation of a 
+        new individual by mating two "parents".
+        
+    pm : float
+        probability of mutation. The mutation operation flips one bit 
+        in the representation of one individual, simulating random mutation
+        that can occur naturally in DNA duplication.
+        
+    library: string
+        name of the directory containing the library of airfoils to be 
+        merged. Every individual in each generation is represented as the
+        percentages of each "library airfoil" merged to create it.
+        The airfoils in this directory must be saved as .dat files with the 
+        name as the first line and the x and y coordinates as two columns, 
+        in counterclockwise order starting from the trailing edge.
+        
+    hypP : np.array, length 5
+        weights of the objective functions. In particular they relate to:
+        - hypP[0] : maximum endurance
+        - hypP[1] : maximum C_l
+        - hypP[2] : delta alpha (stall margin)
+        - hypP[3] : endurance at cruise condition (C_L = 1.33)
+        - hypP[4] : edurance integral over C_l operating range.
+        
+    constraints : tuple, length 2
+        constraints on the ga. In particular:
+        - constraints[0] : minimum stall C_l represented as:
+                           constraints[0]*C_l_cruise
+        - constraints[1] : minimum stall margin in degrees
+        
+    max_iter : int
+        maximum number of iterations for the ga
+        
+   fitness_scaling : float, optional (default 0)
+        define the scaled max of the fitness function as 
+        
+            f_max' = fitness_scaling * f_avg
+            
+        where f_avg is the average of the fitness function for the 
+        current generation. The scaling prevents the algorithm to get 
+        stuck around initial outliers with a very high fitness score.
+        If fitness_scaling = 0, no scaling is applied. 
+        
+   Returns
+   ---------------
+   
+   new_gen : array of :class:'Airfoil' objects, length pop
+        Last generation airfoils. The .dat files are saved in the 
+        "generation/" folder.
+    
+    '''
     # INITIALIZATION
     if pop%2 != 0:
         raise ValueError('The population size must be an even number')
@@ -263,7 +327,7 @@ def encode(airfoil_list):
     
 def decode(airfoil_str):
     '''
-    Translates the airfoil representation from the binary string to a list of integers.
+    Translates the airfoil representation from the binary string to a list of floats.
     '''
     n = int(len(airfoil_str)/7)
     split = [airfoil_str[i:i+7] for i in range(0, len(airfoil_str), 7)]
