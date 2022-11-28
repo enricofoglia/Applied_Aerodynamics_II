@@ -4,7 +4,7 @@
 
 Authors: A. Zigante, E. Foglia, A. Schioppa
 
-This repository will contains code related to the final project of the course "Applied Aerodyaìnamics II" offered to master students at ISAE-SUPAERO.
+This repository will contains code related to the final project of the course "Applied Aerodynamics II" offered to master students at ISAE-SUPAERO.
 
 ## Structure and functionalities
 The proposed genetic optimization algorithm works by merging airfoils drawn from a library of candidate shapes. The merging is carried out using the INTE function of Xfoil, that is also used to evaluate the performances of the parameters.
